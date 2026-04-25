@@ -1,0 +1,2 @@
+{"level":"error","message":"Error initializing Firestore: Failed to parse service account json file: Error: Failed to parse private key: Error: Invalid PEM formatted message.","timestamp":"2026-04-25T08:51:32.516Z"}
+{"level":"error","message":"Error initializing Firestore: Failed to parse service account json file: Error: Failed to parse private key: Error: Invalid PEM formatted message.","timestamp":"2026-04-25T08:52:10.163Z"}

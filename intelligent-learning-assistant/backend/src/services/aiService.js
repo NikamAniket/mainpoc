@@ -1,5 +1,12 @@
 const { VertexAI } = require('@google-cloud/vertexai');
 const logger = require('../middleware/logger');
+const createDOMPurify = require('dompurify');
+const { JSDOM } = require('jsdom');
+const NodeCache = require('node-cache');
+
+const window = new JSDOM('').window;
+const DOMPurify = createDOMPurify(window);
+const aiCache = new NodeCache({ stdTTL: 3600, checkperiod: 600 }); // Cache for 1 hour
 
 // Initialize Vertex AI with your project and location
 const vertex_ai = new VertexAI({
@@ -16,11 +23,18 @@ const generativeModel = vertex_ai.getGenerativeModel({
 
 class AIService {
   async generateExplanation(concept, level = 'beginner') {
+    const cacheKey = `explain_${concept}_${level}`;
+    const cachedResponse = aiCache.get(cacheKey);
+    if (cachedResponse) return cachedResponse;
+
     try {
       const prompt = `Explain the concept of "${concept}" for a ${level} learner. Use analogies and keep it engaging. Format the output as markdown.`;
       const result = await generativeModel.generateContent(prompt);
       const response = result.response;
-      return response.candidates[0].content.parts[0].text;
+      const cleanText = DOMPurify.sanitize(response.candidates[0].content.parts[0].text);
+      
+      aiCache.set(cacheKey, cleanText);
+      return cleanText;
     } catch (error) {
       logger.error(`Error generating explanation (Vertex AI): ${error.message}`);
       throw error;
@@ -68,7 +82,7 @@ class AIService {
 
       const result = await chat.sendMessage(message);
       const response = result.response;
-      return response.candidates[0].content.parts[0].text;
+      return DOMPurify.sanitize(response.candidates[0].content.parts[0].text);
     } catch (error) {
       logger.error(`Error in tutor chat (Vertex AI): ${error.message}`);
       throw error;
