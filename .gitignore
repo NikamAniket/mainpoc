@@ -1,0 +1,14 @@
+# Ignore Google Cloud SDK
+google-cloud-sdk/
+*.tar.gz
+
+# Node
+node_modules/
+
+# Env files
+.env
+*.json
+
+# Build
+dist/
+build/
